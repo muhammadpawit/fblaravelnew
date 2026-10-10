@@ -25,7 +25,7 @@ class DeployController extends Controller
 
             // Daftar perintah yang akan dijalankan
             $commands = [
-                'git pull origin main',          // Tarik kode terbaru
+                'git pull origin master',          // Tarik kode terbaru
                 'composer install --no-dev --optimize-autoloader', // Install dependensi
                 'php artisan migrate --force',   // Jalankan migrasi
                 'php artisan optimize:clear',    // Hapus cache lama
