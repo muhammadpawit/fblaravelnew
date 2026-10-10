@@ -13,12 +13,25 @@ use Illuminate\View\View;
 
 class RoleController extends Controller
 {
-    public function index(SearchMasterRequest $request): View
+    public function index(\Illuminate\Http\Request $request)
     {
-
-        $roles = Role::query()->with('permissions')->withCount('users')->orderBy('name')->paginate(15);
-
-        return view('access.roles.index', ['roles' => $roles]);
+        if ($request->ajax()) {
+            $query = Role::query()->with('permissions')->withCount('users');
+            return datatables()->of($query)
+                ->addColumn('action', function($role) {
+                    if ($role->slug === 'administrator') return '';
+                    return view('components.master-actions', [
+                        'edit-permission' => 'access.manage',
+                        'delete-permission' => 'access.manage',
+                        'edit' => route('access.roles.edit', $role),
+                        'destroy' => route('access.roles.destroy', $role),
+                        'label' => $role->name
+                    ])->render();
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('access.roles.index');
     }
 
     public function create(): View

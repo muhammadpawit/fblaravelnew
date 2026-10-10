@@ -41,6 +41,9 @@ Route::middleware('auth')->group(function () {
             ->middlewareFor(['edit', 'update'], 'can:login-carousel.update')
             ->middlewareFor('destroy', 'can:login-carousel.delete');
     });
+
+    Route::get('/pdf-signature', [\App\Http\Controllers\PdfSignatureController::class, 'index'])->name('pdf-signature.index')->middleware('can:pdf-signature.view');
+    Route::post('/pdf-signature/generate', [\App\Http\Controllers\PdfSignatureController::class, 'generatePdf'])->name('pdf-signature.generate')->middleware('can:pdf-signature.view');
 });
 
 Route::middleware(['auth', 'can:access.manage'])->prefix('access')->name('access.')->group(function () {

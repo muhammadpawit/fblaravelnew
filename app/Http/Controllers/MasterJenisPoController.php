@@ -12,14 +12,24 @@ use Illuminate\View\View;
 
 class MasterJenisPoController extends Controller
 {
-    public function index(SearchMasterRequest $request): View
+    public function index(\Illuminate\Http\Request $request)
     {
-        $search = $request->validated('q') ?? '';
-        $jenisPos = MasterJenisPo::query()
-            ->when($search !== '', fn (Builder $query): Builder => $query->where('nama_jenis_po', 'like', '%'.$search.'%'))
-            ->orderBy('nama_jenis_po')->orderBy('id')->paginate(15)->withQueryString();
-
-        return view('jenis-po.index', compact('jenisPos', 'search'));
+        if ($request->ajax()) {
+            $query = MasterJenisPo::query();
+            return datatables()->of($query)
+                ->addColumn('action', function($po) {
+                    return view('components.master-actions', [
+                        'edit-permission' => 'jenis-po.update',
+                        'delete-permission' => 'jenis-po.delete',
+                        'edit' => route('master.jenis-po.edit', $po),
+                        'destroy' => route('master.jenis-po.destroy', $po),
+                        'label' => $po->nama_jenis_po
+                    ])->render();
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('jenis-po.index');
     }
 
     public function create(): View

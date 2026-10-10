@@ -12,12 +12,25 @@ use Illuminate\View\View;
 
 class MenuController extends Controller
 {
-    public function index(SearchMasterRequest $request): View
+    public function index(\Illuminate\Http\Request $request)
     {
-
-        $menus = Menu::query()->with('permission')->orderBy('sort_order')->orderBy('id')->paginate(20);
-
-        return view('access.menus.index', ['menus' => $menus]);
+        if ($request->ajax()) {
+            $query = Menu::query()->with('permission');
+            return datatables()->of($query)
+                ->addColumn('action', function($menu) {
+                    if ($menu->is_system) return '';
+                    return view('components.master-actions', [
+                        'edit-permission' => 'access.manage',
+                        'delete-permission' => 'access.manage',
+                        'edit' => route('access.menus.edit', $menu),
+                        'destroy' => route('access.menus.destroy', $menu),
+                        'label' => $menu->title
+                    ])->render();
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('access.menus.index');
     }
 
     public function create(): View
