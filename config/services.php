@@ -14,6 +14,13 @@ return [
     |
     */
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
+        'guzzle' => ['connect_timeout' => 5, 'timeout' => 15],
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

@@ -15,6 +15,15 @@ class MasterJenisPoFactory extends Factory
             'nama_jenis_po' => fake()->unique()->bothify('PO-????-#####'),
             'status' => 1,
             'perkalian' => '12.0000',
+            'tampil' => true,
+            'harga_packing' => '0.00',
+            'cucian_finishing' => '0.00',
+            'cucian_finishing_luar' => '0.00',
+            'buangbenang' => '0.00',
+            'lobangkancing' => '0.00',
+            'pasangkancing' => '0.00',
+            'tress' => '0.00',
+
         ];
     }
 }
