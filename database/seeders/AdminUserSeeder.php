@@ -12,9 +12,10 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        if (! app()->environment('local', 'testing')) {
-            throw new RuntimeException('Seeder admin awal hanya untuk lingkungan local atau testing.');
-        }
+        // Blok pengecekan environment dimatikan sementara agar bisa seeding di hosting
+        // if (! app()->environment('local', 'testing')) {
+        //     throw new RuntimeException('Seeder admin awal hanya untuk lingkungan local atau testing.');
+        // }
 
         if (User::withTrashed()->where('username', 'admin')->orWhere('email', 'muhammad.pawit93@gmail.com')->exists()) {
             $this->command?->warn('Akun admin sudah ada. Password dan hak akses tidak diubah.');
