@@ -87,7 +87,7 @@
 
                 @if ($googleAvailable)
                 <div class="mb-4 text-center rounded-lg bg-slate-50 border border-slate-200 p-4">
-                    <h3 class="text-sm font-semibold text-slate-800">Masuk dengan Google Anda</h3>
+                    <h3 class="text-sm font-semibold text-slate-800">Masuk dengan Google</h3>
                     <p class="text-xs text-slate-500 mt-1">Gunakan akun Google yang sudah terdaftar untuk mengakses sistem dengan aman dan cepat.</p>
                 </div>
 
