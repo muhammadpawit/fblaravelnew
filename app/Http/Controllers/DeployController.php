@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Process;
 class DeployController extends Controller
 {
     /**
-     * Jalankan proses deployment (Pull otomatis)
+     * Jalankan proses deployment (Pull otomatis) ..
      */
     public function handle(Request $request)
     {
@@ -22,7 +22,7 @@ class DeployController extends Controller
 
         try {
             $output = [];
-            
+
             // Daftar perintah yang akan dijalankan
             $commands = [
                 'git pull origin main',          // Tarik kode terbaru
@@ -35,7 +35,7 @@ class DeployController extends Controller
             foreach ($commands as $command) {
                 // Eksekusi setiap perintah di root folder project
                 $result = Process::path(base_path())->run($command);
-                
+
                 $output[] = [
                     'command' => $command,
                     'output' => trim($result->output()),
@@ -51,7 +51,6 @@ class DeployController extends Controller
                 'message' => 'Deployment berhasil dijalankan.',
                 'details' => $output
             ]);
-
         } catch (\Exception $e) {
             Log::error('Auto Deploy Failed: ' . $e->getMessage());
             return response()->json(['error' => 'Deployment gagal: ' . $e->getMessage()], 500);
