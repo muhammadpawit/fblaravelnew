@@ -27,8 +27,16 @@ class GoogleAccountService
             if ($user === null) {
                 $user = User::withTrashed()->where('email', $email)->lockForUpdate()->first();
 
-                if ($user === null || $user->trashed() || $user->google_id !== null) {
-                    throw ValidationException::withMessages(['google' => 'Akun Google ini belum diizinkan. Hubungi administrator.']);
+                if ($user === null) {
+                    throw ValidationException::withMessages(['google' => 'Error 1: Email ('.$email.') tidak ditemukan di database hosting.']);
+                }
+                
+                if ($user->trashed()) {
+                    throw ValidationException::withMessages(['google' => 'Error 2: Akun Anda berstatus terhapus (trashed) di database.']);
+                }
+                
+                if ($user->google_id !== null) {
+                    throw ValidationException::withMessages(['google' => 'Error 3: Email ini sudah terikat dengan Google ID lain. Buka phpMyAdmin, cari email Anda, dan kosongkan/NULL-kan isi kolom `google_id`.']);
                 }
 
                 /** Google is authoritative for Gmail and verified Workspace addresses only. */
