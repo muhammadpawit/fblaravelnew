@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => to_route('dashboard'));
 
+// Auto Deploy Route (bisa diakses GET atau POST)
+Route::match(['get', 'post'], '/deploy/webhook', [\App\Http\Controllers\DeployController::class, 'handle'])->name('deploy.webhook');
+
 Route::middleware('guest')->group(function () {
     Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->middleware('throttle:20,1')->name('google.redirect');
     Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->middleware('throttle:20,1')->name('google.callback');
