@@ -14,12 +14,25 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(SearchMasterRequest $request): View
+    public function index(\Illuminate\Http\Request $request)
     {
-        $search = $request->validated('q') ?? '';
-        $users = User::query()->with('role')->when($search !== '', fn (Builder $query): Builder => $query->where(fn (Builder $query): Builder => $query->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%')->orWhere('username', 'like', '%'.$search.'%')))->orderBy('name')->orderBy('id')->paginate(15)->withQueryString();
-
-        return view('access.users.index', ['users' => $users, 'search' => $search]);
+        if ($request->ajax()) {
+            $query = User::query()->with('role');
+            return datatables()->of($query)
+                ->addColumn('action', function($user) {
+                    if ($user->id === auth()->id()) return '<span class="text-xs text-slate-500">Akun Anda</span>';
+                    return view('components.master-actions', [
+                        'edit-permission' => 'access.manage',
+                        'delete-permission' => 'access.manage',
+                        'edit' => route('access.users.edit', $user),
+                        'destroy' => route('access.users.destroy', $user),
+                        'label' => $user->name
+                    ])->render();
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('access.users.index');
     }
 
     public function create(): View

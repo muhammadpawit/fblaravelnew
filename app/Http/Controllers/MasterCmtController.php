@@ -12,20 +12,24 @@ use Illuminate\View\View;
 
 class MasterCmtController extends Controller
 {
-    public function index(SearchMasterRequest $request): View
+    public function index(\Illuminate\Http\Request $request)
     {
-        $search = $request->validated('q') ?? '';
-        $cmts = MasterCmt::query()
-            ->when($search !== '', function (Builder $query) use ($search): void {
-                $query->where(function (Builder $query) use ($search): void {
-                    $query->where('kode_cmt', 'like', '%'.$search.'%')
-                        ->orWhere('cmt_name', 'like', '%'.$search.'%')
-                        ->orWhere('cmt_job_desk', 'like', '%'.$search.'%');
-                });
-            })
-            ->orderBy('cmt_name')->orderBy('id')->paginate(15)->withQueryString();
-
-        return view('master-cmt.index', compact('cmts', 'search'));
+        if ($request->ajax()) {
+            $query = MasterCmt::query();
+            return datatables()->of($query)
+                ->addColumn('action', function($cmt) {
+                    return view('components.master-actions', [
+                        'edit-permission' => 'cmt.update',
+                        'delete-permission' => 'cmt.delete',
+                        'edit' => route('master.cmt.edit', $cmt),
+                        'destroy' => route('master.cmt.destroy', $cmt),
+                        'label' => $cmt->cmt_name
+                    ])->render();
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('master-cmt.index');
     }
 
     public function create(): View

@@ -9,17 +9,24 @@ use Illuminate\Http\RedirectResponse;
 
 class LoginCarouselController extends Controller
 {
-    public function index(Request $request): View
+    public function index(\Illuminate\Http\Request $request)
     {
-        $search = $request->query('q', '');
-        $carousels = LoginCarousel::query()
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where('title', 'like', '%'.$search.'%')
-                      ->orWhere('subtitle', 'like', '%'.$search.'%');
-            })
-            ->orderBy('order')->orderBy('id')->paginate(15)->withQueryString();
-
-        return view('master.login-carousels.index', compact('carousels', 'search'));
+        if ($request->ajax()) {
+            $query = LoginCarousel::query();
+            return datatables()->of($query)
+                ->addColumn('action', function($carousel) {
+                    return view('components.master-actions', [
+                        'edit-permission' => 'login-carousel.update',
+                        'delete-permission' => 'login-carousel.delete',
+                        'edit' => route('master.login-carousels.edit', $carousel),
+                        'destroy' => route('master.login-carousels.destroy', $carousel),
+                        'label' => $carousel->title ?: 'Gambar'
+                    ])->render();
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('master.login-carousels.index');
     }
 
     public function create(): View
