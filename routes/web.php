@@ -2,10 +2,14 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeployController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\LoginCarouselController;
 use App\Http\Controllers\MasterCmtController;
 use App\Http\Controllers\MasterJenisPoController;
+use App\Http\Controllers\MasterKodePoController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\PdfSignatureController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -14,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', fn () => to_route('dashboard'));
 
 // Auto Deploy Route (bisa diakses GET atau POST)
-Route::match(['get', 'post'], '/deploy/webhook', [\App\Http\Controllers\DeployController::class, 'handle'])->name('deploy.webhook');
+Route::match(['get', 'post'], '/deploy/webhook', [DeployController::class, 'handle'])->name('deploy.webhook');
 
 Route::middleware('guest')->group(function () {
     Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->middleware('throttle:20,1')->name('google.redirect');
@@ -38,15 +42,20 @@ Route::middleware('auth')->group(function () {
             ->middlewareFor(['create', 'store'], 'can:jenis-po.create')
             ->middlewareFor(['edit', 'update'], 'can:jenis-po.update')
             ->middlewareFor('destroy', 'can:jenis-po.delete');
-        Route::resource('login-carousels', \App\Http\Controllers\LoginCarouselController::class)->except('show')
+        Route::resource('kode-po', MasterKodePoController::class)->parameters(['kode-po' => 'kodePo'])->except('show')
+            ->middlewareFor('index', 'can:kode-po.view')
+            ->middlewareFor(['create', 'store'], 'can:kode-po.create')
+            ->middlewareFor(['edit', 'update'], 'can:kode-po.update')
+            ->middlewareFor('destroy', 'can:kode-po.delete');
+        Route::resource('login-carousels', LoginCarouselController::class)->except('show')
             ->middlewareFor('index', 'can:login-carousel.view')
             ->middlewareFor(['create', 'store'], 'can:login-carousel.create')
             ->middlewareFor(['edit', 'update'], 'can:login-carousel.update')
             ->middlewareFor('destroy', 'can:login-carousel.delete');
     });
 
-    Route::get('/pdf-signature', [\App\Http\Controllers\PdfSignatureController::class, 'index'])->name('pdf-signature.index')->middleware('can:pdf-signature.view');
-    Route::post('/pdf-signature/generate', [\App\Http\Controllers\PdfSignatureController::class, 'generatePdf'])->name('pdf-signature.generate')->middleware('can:pdf-signature.view');
+    Route::get('/pdf-signature', [PdfSignatureController::class, 'index'])->name('pdf-signature.index')->middleware('can:pdf-signature.view');
+    Route::post('/pdf-signature/generate', [PdfSignatureController::class, 'generatePdf'])->name('pdf-signature.generate')->middleware('can:pdf-signature.view');
 });
 
 Route::middleware(['auth', 'can:access.manage'])->prefix('access')->name('access.')->group(function () {

@@ -29,7 +29,7 @@ class AccessControlService
             $role->save();
             $permissionIds = $data['permissions'] ?? [];
             $selected = Permission::whereIn('id', $permissionIds)->pluck('name');
-            foreach (['cmt', 'jenis-po'] as $module) {
+            foreach (['cmt', 'jenis-po', 'kode-po'] as $module) {
                 if ($selected->intersect([$module.'.create', $module.'.update', $module.'.delete'])->isNotEmpty()) {
                     $permissionIds[] = Permission::where('name', $module.'.view')->firstOrFail()->id;
                 }
@@ -101,10 +101,10 @@ class AccessControlService
     public function saveMenu(Menu $menu, array $data): void
     {
         $permission = null;
-        if (!empty($data['route_name'])) {
+        if (! empty($data['route_name'])) {
             $permission = config('access.menu_routes')[$data['route_name']]['permission'] ?? null;
         }
-        
+
         $menu->fill($data);
         $menu->permission_id = $permission === null ? null : Permission::where('name', $permission)->firstOrFail()->id;
         $menu->save();

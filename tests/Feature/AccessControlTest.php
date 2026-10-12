@@ -61,21 +61,22 @@ test('administrator can render all access management pages', function (string $r
     $this->actingAs(User::factory()->administrator()->create())->get(route($route))->assertOk();
 })->with(['access.users.index', 'access.users.create', 'access.roles.index', 'access.roles.create', 'access.menus.index', 'access.menus.create', 'access.permissions.index']);
 
-test('roles assign permissions and automatically include read access', function () {
-    $permission = Permission::where('name', 'cmt.update')->sole();
+test('roles assign write permissions and automatically include read access', function (string $module) {
+    $this->seed(RoleSeeder::class);
+    $permission = Permission::where('name', $module.'.update')->sole();
     $this->actingAs(User::factory()->administrator()->create());
 
-    $this->post(route('access.roles.store'), ['name' => 'Tim Jahit', 'permissions' => [$permission->id], 'slug' => 'administrator', 'is_system' => true])
+    $this->post(route('access.roles.store'), ['name' => 'Editor '.ucfirst($module), 'permissions' => [$permission->id], 'slug' => 'administrator', 'is_system' => true])
         ->assertRedirect(route('access.roles.index'));
 
-    $role = Role::where('name', 'Tim Jahit')->sole();
+    $role = Role::where('name', 'Editor '.ucfirst($module))->sole();
     expect($role->slug)->not->toBe('administrator');
     expect($role->is_system)->toBeFalse();
-    expect($role->permissions->pluck('name')->sort()->values()->all())->toBe(['cmt.update', 'cmt.view']);
+    expect($role->permissions->pluck('name')->sort()->values()->all())->toBe([$module.'.update', $module.'.view']);
     $this->get(route('access.roles.edit', $role))->assertOk();
-    $this->put(route('access.roles.update', $role), ['name' => 'Tim Jahit'])->assertRedirect();
+    $this->put(route('access.roles.update', $role), ['name' => 'Editor '.ucfirst($module)])->assertRedirect();
     expect($role->fresh()->permissions)->toHaveCount(0);
-});
+})->with(['cmt', 'jenis-po', 'kode-po']);
 
 test('administrator role is immutable and default role cannot be deleted', function () {
     $admin = Role::where('slug', 'administrator')->sole();
@@ -224,6 +225,6 @@ test('permission and menu seeds are idempotent and preserve customizations', fun
     expect($role->fresh()->permissions)->toHaveCount(0);
     expect($menu->fresh()->label)->toBe('Beranda');
     $this->assertDatabaseCount('roles', 3);
-    $this->assertDatabaseCount('permissions', 9);
-    $this->assertDatabaseCount('menus', 7);
+    expect(Permission::count())->toBe(count(config('access.permissions')));
+    expect(Menu::count())->toBe(count(config('access.menu_routes')));
 });

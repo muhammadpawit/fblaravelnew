@@ -15,7 +15,7 @@ class MenuSeeder extends Seeder
         foreach (config('access.menu_routes') as $route => $definition) {
             Menu::firstOrCreate(['route_name' => $route], [
                 'label' => $definition['label'],
-                'group' => str_starts_with($route, 'access.') ? 'Administrasi' : 'Utama',
+                'group' => str_starts_with($route, 'master.') ? 'Master Data' : (str_starts_with($route, 'access.') ? 'Administrasi' : 'Utama'),
                 'sort_order' => $order,
                 'is_active' => true,
                 'permission_id' => $definition['permission'] === null ? null : Permission::where('name', $definition['permission'])->firstOrFail()->id,
